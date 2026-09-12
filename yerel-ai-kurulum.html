@@ -1,0 +1,571 @@
+<title>Yerel AI Kodlama Yığını</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #F2F5F7;
+    --panel: #FFFFFF;
+    --ink: #131820;
+    --ink-2: #3A4553;
+    --muted: #5F6B7A;
+    --rule: #D3DBE2;
+    --rule-soft: #E4EAEF;
+    --accent: #0B6E6E;
+    --accent-soft: #D8EDED;
+    --warn: #8A5200;
+    --warn-soft: #F7E9D2;
+    --bad: #9E2727;
+    --bad-soft: #F7DEDE;
+    --good: #1D6B3C;
+    --code-bg: #10161D;
+    --code-ink: #DCE5EC;
+    --code-dim: #7D8D9C;
+
+    --step: clamp(1rem, 0.95rem + 0.25vw, 1.0625rem);
+    --h1: clamp(2rem, 1.5rem + 2.2vw, 3rem);
+    --h2: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);
+    --h3: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10151B;
+      --panel: #171E26;
+      --ink: #E7ECF1;
+      --ink-2: #BFCAD5;
+      --muted: #8E9BA9;
+      --rule: #2B3641;
+      --rule-soft: #222C36;
+      --accent: #4FBDBD;
+      --accent-soft: #123434;
+      --warn: #E0A85C;
+      --warn-soft: #33270F;
+      --bad: #E88585;
+      --bad-soft: #341919;
+      --good: #6FC08D;
+      --code-bg: #0A0F14;
+      --code-ink: #D5E0E9;
+      --code-dim: #6B7A88;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #10151B;
+    --panel: #171E26;
+    --ink: #E7ECF1;
+    --ink-2: #BFCAD5;
+    --muted: #8E9BA9;
+    --rule: #2B3641;
+    --rule-soft: #222C36;
+    --accent: #4FBDBD;
+    --accent-soft: #123434;
+    --warn: #E0A85C;
+    --warn-soft: #33270F;
+    --bad: #E88585;
+    --bad-soft: #341919;
+    --good: #6FC08D;
+    --code-bg: #0A0F14;
+    --code-ink: #D5E0E9;
+    --code-dim: #6B7A88;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: var(--step);
+    line-height: 1.65;
+    margin: 0;
+    padding-inline: 20px;
+    padding-block: 0 72px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 860px; margin-inline: auto; }
+  .prose { max-width: 66ch; }
+
+  h1, h2, h3 { font-family: Archivo, system-ui, sans-serif; text-wrap: balance; margin: 0; }
+  h1 { font-size: var(--h1); font-weight: 700; letter-spacing: -0.022em; line-height: 1.08; }
+  h2 { font-size: var(--h2); font-weight: 600; letter-spacing: -0.012em; line-height: 1.2; }
+  h3 { font-size: var(--h3); font-weight: 600; letter-spacing: -0.006em; }
+  p { margin: 0; }
+  code, kbd { font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* ---------- masthead ---------- */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-block: 44px 22px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .lede { color: var(--ink-2); font-size: 1.0625rem; max-width: 60ch; }
+
+  .rig {
+    display: flex; flex-wrap: wrap; gap: 0;
+    border: 1px solid var(--rule);
+    background: var(--panel);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .rig div {
+    flex: 1 1 150px;
+    padding: 11px 14px;
+    border-right: 1px solid var(--rule-soft);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .rig div:last-child { border-right: 0; }
+  .rig dt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.625rem; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--muted); margin: 0;
+  }
+  .rig dd {
+    margin: 0; font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8125rem; font-weight: 500; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- sections ---------- */
+  section { padding-block: 44px; border-bottom: 1px solid var(--rule-soft); }
+  section:last-of-type { border-bottom: 0; }
+  .sec-head { display: flex; flex-direction: column; gap: 7px; margin-bottom: 22px; }
+
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+
+  /* ---------- tables ---------- */
+  .tw { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 0.875rem; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  thead th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.625rem; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500;
+    border-bottom: 1px solid var(--rule); white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.m, th.m { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .win { color: var(--good); font-weight: 600; }
+  .lose { color: var(--bad); font-weight: 600; }
+
+  /* ---------- vram chart ---------- */
+  .budget { display: flex; flex-direction: column; gap: 18px; }
+  .bar-row { display: flex; flex-direction: column; gap: 6px; }
+  .bar-label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .bar-label b { font-weight: 600; font-size: 0.9375rem; }
+  .bar-label span { font-family: "IBM Plex Mono", monospace; font-size: 0.8125rem; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .track {
+    position: relative; height: 30px; background: var(--rule-soft);
+    border-radius: 2px; overflow: visible;
+  }
+  .fill { position: absolute; inset-block: 0; left: 0; border-radius: 2px 0 0 2px; }
+  .fill.ok { background: var(--accent); }
+  .fill.over { background: var(--bad); }
+  .ceiling {
+    position: absolute; top: -7px; bottom: -7px; width: 2px;
+    background: var(--ink); left: 68.2%;
+  }
+  .ceiling::after {
+    content: "6141 MiB kart siniri";
+    position: absolute; left: 7px; top: -3px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.625rem;
+    letter-spacing: 0.06em; color: var(--ink); white-space: nowrap;
+  }
+  .scale {
+    display: flex; justify-content: space-between;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.625rem;
+    color: var(--muted); font-variant-numeric: tabular-nums;
+    border-top: 1px solid var(--rule); padding-top: 5px;
+  }
+
+  /* ---------- steps ---------- */
+  ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 26px; }
+  ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start; }
+  ol.steps > li::before {
+    content: counter(s, decimal-leading-zero);
+    font-family: "IBM Plex Mono", monospace; font-size: 0.75rem; font-weight: 600;
+    color: var(--accent); border-top: 2px solid var(--accent); padding-top: 5px;
+  }
+  .step-body { display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+
+  /* ---------- code ---------- */
+  pre {
+    margin: 0; background: var(--code-bg); color: var(--code-ink);
+    padding: 13px 15px; border-radius: 3px; overflow-x: auto;
+    font-size: 0.8125rem; line-height: 1.6;
+  }
+  pre code { font-family: "IBM Plex Mono", monospace; }
+  pre .c { color: var(--code-dim); }
+  p code, li code, td code {
+    background: var(--rule-soft); padding: 0.1em 0.36em;
+    border-radius: 2px; font-size: 0.875em; word-break: break-word;
+  }
+  .path {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.75rem;
+    color: var(--muted); word-break: break-all;
+  }
+
+  /* ---------- traps ---------- */
+  .traps { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule); }
+  .trap { border-bottom: 1px solid var(--rule); padding-block: 18px; display: grid; grid-template-columns: 1fr; gap: 9px; }
+  .trap-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .tag {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.625rem;
+    letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
+    padding: 2px 7px; border-radius: 2px; white-space: nowrap;
+  }
+  .tag.block { background: var(--bad-soft); color: var(--bad); }
+  .tag.silent { background: var(--warn-soft); color: var(--warn); }
+  .trap p { color: var(--ink-2); font-size: 0.9375rem; }
+  .fix {
+    border-left: 2px solid var(--accent); padding-left: 12px;
+    font-size: 0.9375rem; color: var(--ink);
+  }
+  .fix b { font-family: Archivo, sans-serif; font-weight: 600; }
+
+  .note {
+    background: var(--accent-soft); border-radius: 3px;
+    padding: 14px 16px; font-size: 0.9375rem; color: var(--ink);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+
+  footer {
+    padding-top: 30px; color: var(--muted); font-size: 0.8125rem;
+    border-top: 2px solid var(--ink); margin-top: 12px;
+  }
+
+  ul.tight { margin: 0; padding-left: 1.15em; display: flex; flex-direction: column; gap: 5px; }
+  ul.tight li { color: var(--ink-2); font-size: 0.9375rem; }
+
+  @media (max-width: 560px) {
+    .ceiling::after { font-size: 0.5625rem; }
+    ol.steps > li { grid-template-columns: 24px 1fr; gap: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Kurulum Rehberi &middot; Windows 11</div>
+  <h1>Yerel AI Kodlama Yığını</h1>
+  <p class="lede">6 GB VRAM'li bir dizüstünde, internete hiçbir kod göndermeden, editör içinden komut verip kod yazdıran bir kurulum. Aşağıdaki her sayı bu makinede ölçüldü.</p>
+  <dl class="rig">
+    <div><dt>GPU</dt><dd>RTX 4050 Laptop</dd></div>
+    <div><dt>VRAM</dt><dd>6141 MiB</dd></div>
+    <div><dt>RAM</dt><dd>15.7 GB</dd></div>
+    <div><dt>CPU</dt><dd>i7-13620H</dd></div>
+  </dl>
+</header>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Bileşenler</div>
+    <h2>Yığın</h2>
+  </div>
+  <div class="stack">
+    <p class="prose">Dört parça var: modeli çalıştıran uygulama, modelin kendisi, editör ve editörü modele bağlayan eklenti. Hepsi ücretsiz, hiçbiri hesap istemiyor.</p>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Bileşen</th><th>Ne işe yarar</th><th class="m">Sürüm</th><th>Nereden</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>LM Studio</b></td>
+            <td>Modeli çalıştırır, OpenAI uyumlu bir API sunar</td>
+            <td class="m">0.4.24</td>
+            <td class="m">winget · <code>ElementLabs.LMStudio</code></td>
+          </tr>
+          <tr>
+            <td><b>qwen/qwen3.5-4b</b></td>
+            <td>Modelin kendisi — kod + görüntü</td>
+            <td class="m">Q4_K_M · 3.38 GB</td>
+            <td class="m">LM Studio Hub · <code>lms get</code></td>
+          </tr>
+          <tr>
+            <td><b>VS Code</b></td>
+            <td>Editör</td>
+            <td class="m">1.134</td>
+            <td class="m">winget · <code>Microsoft.VisualStudioCode</code></td>
+          </tr>
+          <tr>
+            <td><b>Cline</b></td>
+            <td>Ajan eklentisi — dosya yazar, terminal çalıştırır</td>
+            <td class="m">4.1.17</td>
+            <td class="m">Marketplace · <code>saoudrizwan.claude-dev</code></td>
+          </tr>
+          <tr>
+            <td><b>Continue</b></td>
+            <td>Daha hafif alternatif — sohbet, satır içi düzenleme</td>
+            <td class="m">2.0.0</td>
+            <td class="m">Marketplace · <code>Continue.continue</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose" style="color:var(--muted);font-size:0.9375rem">Editör alternatifleri: <b>Zed</b> (<code>ZedIndustries.Zed</code>, LM Studio'yu yerleşik destekler), <b>VSCodium</b> (<code>VSCodium.VSCodium</code>, telemetrisiz VS Code), <b>Cursor</b> (kendi hesabını ister). Cline ve Continue hepsinde çalışır.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Belirleyici Kısıt</div>
+    <h2>Her şey VRAM bütçesine bağlı</h2>
+  </div>
+  <div class="stack">
+    <p class="prose">Model seçimi zevk meselesi değil, aritmetik. Model ağırlıkları artı 32k bağlam için KV önbelleği karta sığmazsa fazlası sistem RAM'ine taşar ve üretim hızı çöker. Bu makinede ölçülen iki aday:</p>
+
+    <div class="budget">
+      <div class="bar-row">
+        <div class="bar-label"><b>qwen3.5-4b @ 32k</b> <span>4.57 GiB &mdash; tamamen GPU'da <span class="win">&check; sığıyor</span></span></div>
+        <div class="track">
+          <div class="fill ok" style="width:52.0%"></div>
+          <div class="ceiling"></div>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><b>qwen3.5-9b @ 32k</b> <span>8.39 GiB &mdash; %32'si RAM'e taşar <span class="lose">&cross; sığmıyor</span></span></div>
+        <div class="track">
+          <div class="fill over" style="width:95.4%"></div>
+          <div class="ceiling"></div>
+        </div>
+      </div>
+      <div class="scale"><span>0</span><span>2250</span><span>4500</span><span>6750</span><span>9000 MiB</span></div>
+    </div>
+
+    <div class="note">
+      <b>Pratik sonuç</b>
+      <span>9B model yüklenir ve izole testte 10.9 tok/s yapar — ama ajan konuşması büyüdükçe <b>1.95 tok/s</b>'e düşer, istekler 350 saniyeyi aşar ve eklenti bağlantıyı keser. 4B tamamen GPU'da kaldığı için hız sabit kalır. Bu kartta 4B doğru cevap.</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Sırayla</div>
+    <h2>Kurulum</h2>
+  </div>
+  <ol class="steps">
+    <li>
+      <div class="step-body">
+        <h3>LM Studio'yu kur</h3>
+        <pre><code>winget install --id ElementLabs.LMStudio -e --source winget --silent <span class="c">`</span>
+  --accept-package-agreements --accept-source-agreements</code></pre>
+        <p style="font-size:0.9375rem;color:var(--ink-2)"><code>--source winget</code> şart. Bu bayrak olmadan msstore kaynağı sertifika hatası verip komutu belirsizlik yüzünden düşürebiliyor.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-body">
+        <h3>Uygulamayı bir kez elle aç</h3>
+        <p style="font-size:0.9375rem;color:var(--ink-2)"><code>lms</code> komut satırı aracı, uygulama en az bir kez açılıp <code>~/.lmstudio</code> dizinini oluşturmadan çalışmaz. Açılışta sunucu da kendiliğinden kalkar.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-body">
+        <h3>CLI'ı PATH'e ekle</h3>
+        <pre><code>& "$env:LOCALAPPDATA\Programs\LM Studio\resources\app\.webpack\lms.exe" bootstrap</code></pre>
+        <p style="font-size:0.9375rem;color:var(--ink-2)">Bundan sonra yeni bir terminalde <code>lms</code> doğrudan çalışır.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-body">
+        <h3>Modeli indir ve yükle</h3>
+        <pre><code>lms get qwen/qwen3.5-4b -y --gguf
+lms load qwen/qwen3.5-4b -y --context-length 32768 --parallel 1 --gpu max
+lms server start --port 1234</code></pre>
+        <p style="font-size:0.9375rem;color:var(--ink-2)"><code>--parallel 1</code> atlanmamalı. Varsayılan 4 eşzamanlı tahmin, 6 GB kartta KV önbelleğini dörde katlayıp belleği taşırır. <code>--identifier</code> <b>kullanma</b> — model kimliği hub anahtarından farklı olursa, JIT yükleme aynı modelin ikinci bir kopyasını yükleyebilir.</p>
+      </div>
+    </li>
+    <li>
+      <div class="step-body">
+        <h3>Editörü ve eklentiyi kur</h3>
+        <pre><code>winget install --id Microsoft.VisualStudioCode -e --source winget --silent <span class="c">`</span>
+  --accept-package-agreements --accept-source-agreements
+
+code --install-extension saoudrizwan.claude-dev --force
+code --install-extension Continue.continue --force</code></pre>
+      </div>
+    </li>
+    <li>
+      <div class="step-body">
+        <h3>Eklentiyi modele bağla</h3>
+        <p style="font-size:0.9375rem;color:var(--ink-2)">Aşağıdaki bölümdeki config dosyalarını yaz. Cline için ayrıca eklenti panelinden sağlayıcıyı bir kez seçmen gerekiyor — sebebi Tuzaklar bölümünde.</p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Dosyalar</div>
+    <h2>Yapılandırma</h2>
+  </div>
+  <div class="stack">
+    <p class="prose">Her eklentinin kendi dosyası var ve üçü de <b>ev dizininde</b> duruyor, editörün içinde değil. Bu yüzden aynı dosyalar VS Code, Cursor ve VSCodium tarafından paylaşılır — bir kez yazarsan hepsinde geçerli olur.</p>
+
+    <div>
+      <h3>Cline</h3>
+      <p class="path">%USERPROFILE%\.cline\data\globalState.json</p>
+      <pre><code>"planModeApiProvider": "lmstudio",
+"actModeApiProvider": "lmstudio",
+"planModeLmStudioModelId": "qwen/qwen3.5-4b",
+"actModeLmStudioModelId": "qwen/qwen3.5-4b",
+"lmStudioBaseUrl": "http://localhost:1234",
+"lmStudioMaxTokens": "32768",
+"planModeReasoningEffort": "low",
+"actModeReasoningEffort": "low"</code></pre>
+      <p style="font-size:0.875rem;color:var(--ink-2);margin-top:8px">Base URL <b>çıplak</b> yazılır — Cline <code>/v1</code>'i kendi ekler. Mevcut dosyaya bu anahtarları ekle, üzerine tam dosya yazma; diğer ayarların orada duruyor.</p>
+    </div>
+
+    <div>
+      <h3>Continue</h3>
+      <p class="path">%USERPROFILE%\.continue\config.yaml</p>
+      <pre><code>models:
+  - name: Local Qwen3.5 4B (LM Studio)
+    provider: lmstudio
+    model: qwen/qwen3.5-4b
+    apiBase: http://localhost:1234/v1
+    contextLength: 32768
+    roles: [chat, edit, apply]
+    capabilities: [tool_use, image_input]</code></pre>
+      <p style="font-size:0.875rem;color:var(--ink-2);margin-top:8px">Burada <code>/v1</code> <b>gerekli</b> — Cline'ın tersi. <code>image_input</code> olmadan görsel gönderemezsin.</p>
+    </div>
+
+    <div>
+      <h3>Zed <span style="font-weight:400;color:var(--muted);font-size:0.875rem">(bu editörü kullanıyorsan)</span></h3>
+      <p class="path">%APPDATA%\Zed\settings.json</p>
+      <pre><code>{
+  "language_models": {
+    "lmstudio": { "api_url": "http://localhost:1234/api/v0" }
+  },
+  "agent": {
+    "default_model": { "provider": "lmstudio", "model": "qwen/qwen3.5-4b" }
+  }
+}</code></pre>
+      <p style="font-size:0.875rem;color:var(--ink-2);margin-top:8px">Üçüncü bir varyant: Zed ne <code>/v1</code> ne çıplak kök istiyor, <code>/api/v0</code> yani LM Studio'nun kendi REST API'si.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Kontrol</div>
+    <h2>Çalıştığını doğrulama</h2>
+  </div>
+  <div class="stack">
+    <p class="prose">Editörü açıp denemeden önce bunları çalıştır. Üçü de geçiyorsa sorun editör tarafındadır, modelde değil.</p>
+    <pre><code><span class="c"># 1. Sunucu ayakta ve model yüklü mü</span>
+lms ps
+
+<span class="c"># 2. API model listesi donduruyor mu</span>
+curl http://localhost:1234/api/v0/models
+
+<span class="c"># 3. En kritigi: tool calling calisiyor mu.</span>
+<span class="c">#    Gövdeyi dosyadan ver — PowerShell satır içi JSON'u bozar.</span>
+curl -X POST http://localhost:1234/v1/chat/completions <span class="c">`</span>
+  -H "Content-Type: application/json" -d "@test.json"</code></pre>
+    <p style="font-size:0.9375rem;color:var(--ink-2)">Üçüncü testte yanıtta <code>"finish_reason": "tool_calls"</code> görmen gerekiyor. Model düz metinle cevap veriyorsa ajan eklentisi <b>hiç çalışmaz</b> — dosya yazma, terminal komutu, hepsi tool calling üzerinden gider.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Bilinen Sorunlar</div>
+    <h2>Tuzaklar</h2>
+  </div>
+  <p class="prose" style="margin-bottom:20px">Bu kurulum sırasında karşılaşılan ve sebebi hemen belli olmayan sorunlar. Çoğu sessizce başarısız oluyor.</p>
+  <div class="traps">
+
+    <div class="trap">
+      <div class="trap-head"><span class="tag block">Engelleyici</span><h3>BodyTimeoutError (UND_ERR_BODY_TIMEOUT)</h3></div>
+      <p>Ajan birkaç tur sonra bağlantıyı kesiyor. Timeout ayarı sorunu değil: model karta sığmadığı için, konuşma büyüdükçe üretim 1.95 tok/s'e düşüyor ve istek 350 saniyeyi aşıyor.</p>
+      <div class="fix"><b>Çözüm:</b> tamamen VRAM'e sığan bir modele geç. Teşhis için LM Studio sunucu logundaki <code>eval time</code> satırlarına bak — gerçek tok/s orada yazıyor.</div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-head"><span class="tag silent">Sessiz</span><h3>Cline ayarları geri alıyor</h3></div>
+      <p>Çalışan Cline, bellek durumunu <code>globalState.json</code> üzerine yazıyor. Editör açıkken dosyayı düzenlersen değişiklik bir süre sonra kayboluyor — model kimliği eski değerine dönüyor.</p>
+      <div class="fix"><b>Çözüm:</b> dosyayı editör <b>kapalıyken</b> yaz, ya da sağlayıcıyı bir kez Cline panelinden seç. Panelden seçince eklentinin kendi durumu da güncellenir ve kalıcı olur.</div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-head"><span class="tag silent">Sessiz</span><h3>JIT ikinci kopya yüklüyor</h3></div>
+      <p><code>justInTimeModelLoading</code> açıkken, bilinmeyen bir model kimliği için gelen istek modeli varsayılan ayarlarla otomatik yükler. <code>--identifier</code> ile özel isim verdiysen, hub anahtarına gelen istek <b>ikinci bir kopya</b> yükler ve kart taşar.</p>
+      <div class="fix"><b>Çözüm:</b> <code>--identifier</code> kullanma, kimlik hub anahtarıyla aynı kalsın. <code>lms ps</code> ile tek kopya olduğunu doğrula.</div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-head"><span class="tag silent">Sessiz</span><h3>PowerShell config dosyalarını bozuyor</h3></div>
+      <p><code>Out-File -Encoding utf8</code> ve <code>Set-Content -Encoding utf8</code>, PowerShell 5.1'de dosyanın başına BOM ekler. Node'un <code>JSON.parse</code>'ı buna takılır; Cline dosyayı boş okuyup <b>üzerine yazabilir</b>.</p>
+      <div class="fix"><b>Çözüm:</b> <code>[IO.File]::WriteAllText($p, $t, (New-Object System.Text.UTF8Encoding $false))</code> kullan, ya da dosyayı Bash/Node ile yaz.</div>
+    </div>
+
+    <div class="trap">
+      <div class="trap-head"><span class="tag silent">Sessiz</span><h3>Base URL her eklentide farklı</h3></div>
+      <p>Cline çıplak kök (<code>:1234</code>), Continue <code>/v1</code>, Zed <code>/api/v0</code> bekliyor. Yanlış olanı yazarsan bağlantı sessizce kurulmaz ya da <code>/v1/v1</code> gibi geçersiz bir adrese gider.</p>
+      <div class="fix"><b>Çözüm:</b> yukarıdaki Yapılandırma bölümündeki değerleri birebir kullan.</div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Ölçümler</div>
+    <h2>Gerçekte ne kadar hızlı</h2>
+  </div>
+  <div class="stack">
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Ölçüm</th><th class="m">qwen3.5-4b</th><th class="m">qwen3.5-9b</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2000 token üretimi</td><td class="m win">63.9 s</td><td class="m">183.7 s</td></tr>
+          <tr><td>Tek dosya kod yazma (tool call)</td><td class="m win">18.5 s</td><td class="m">39.5 s</td></tr>
+          <tr><td>Model yükleme</td><td class="m win">6.6 s</td><td class="m">34.8 s</td></tr>
+          <tr><td>Kalan boş VRAM</td><td class="m win">914 MiB</td><td class="m">95 MiB</td></tr>
+          <tr><td>Prompt işleme (prefill)</td><td class="m">~720 tok/s</td><td class="m">~720 tok/s</td></tr>
+          <tr><td>Ajan konuşmasında üretim</td><td class="m win">sabit</td><td class="m lose">1.95 tok/s'e düşer</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose">Prompt işleme her iki modelde de hızlı — darboğaz orada değil, token üretiminde. Bu yüzden "prompt çok uzun" diye bağlamı kısmak sorunu çözmez; modelin karta sığması çözer.</p>
+
+    <h3 style="margin-top:14px">Beklentiler</h3>
+    <ul class="tight">
+      <li><b>İyi çalıştığı işler:</b> tek dosyalık fonksiyon yazma, test üretme, refactor, hata mesajı yorumlama, ekran görüntüsü okuma.</li>
+      <li><b>Zorlandığı işler:</b> çok dosyalı mimari değişiklikler, uzun ajan döngüleri, belirsiz talimatlar. 4B model birkaç adımdan sonra dağılabilir.</li>
+      <li><b>Kod kalitesi:</b> çalışır kod üretiyor ama gözden geçirmen gerekiyor. Test sırasında ürettiği <code>slugify</code> fonksiyonunda regex bayrağı eksikti — kod çalışıyordu, sadece yanlış çalışıyordu.</li>
+      <li><b>Görüntü:</b> model <code>vlm</code> tipinde. Test görselindeki şekilleri, renkleri ve metni doğru okudu, ama olmayan bir detay uydurdu.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Günlük Kullanım</div>
+    <h2>Bakım</h2>
+  </div>
+  <div class="stack">
+    <ul class="tight">
+      <li><b>LM Studio açık olmalı.</b> Kapalıyken hiçbir eklenti bağlanamaz. Sunucu ayarı <code>autoStartOnLaunch</code> olduğu için uygulamayı açman yeterli.</li>
+      <li><b>Model silme:</b> <code>lms</code> setinde silme komutu yok. Model klasörünü elle kaldır: <code>%USERPROFILE%\.lmstudio\models\lmstudio-community\&lt;model&gt;</code></li>
+      <li><b>Disk:</b> her model 3&ndash;7 GB. İndirmeden önce yer olduğundan emin ol; yarım kalan indirmeler <code>.part</code> uzantısıyla yer kaplamaya devam eder.</li>
+      <li><b>Model değiştirme:</b> <code>lms unload --all</code> sonra yeni modeli yükle, ardından her iki config dosyasındaki model adını güncelle. Eski ad kalırsa eklenti "model bulunamadı" hatası verir.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  Bu rehberdeki tüm sürümler, komutlar ve ölçümler 12 Eylül 2026'da yukarıda özellikleri verilen makinede doğrulandı. Farklı bir GPU'da VRAM bütçesi bölümündeki aritmetiği kendi kartına göre yeniden yap — model seçimi oradan çıkar.
+</footer>
+
+</div>
